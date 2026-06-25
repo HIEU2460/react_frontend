@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { deleteItem, getCollection } from '../services/api';
+import { getProductImage } from '../utils/productImages';
 
 export default function AdminProducts() {
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
         const fetchProducts = async () => {
-            const res = await axios.get('http://localhost:3001/products');
-            setProducts(res.data);
+            const productsData = await getCollection('products');
+            setProducts(productsData);
         };
         fetchProducts();
     }, []);
@@ -15,7 +16,7 @@ export default function AdminProducts() {
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi hệ thống?")) {
             try {
-                await axios.delete(`http://localhost:3001/products/${id}`);
+                await deleteItem('products', id);
                 setProducts(products.filter(p => p.id !== id));
                 alert('Đã xóa thành công!');
             } catch (err) {
@@ -49,7 +50,7 @@ export default function AdminProducts() {
                         <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '15px', fontWeight: 'bold' }}>{product.id}</td>
                             <td>
-                                <img src={`/assets/images/${product.image}`} alt={product.name} style={{ width: '50px', height: '50px', objectFit: 'contain' }} onError={(e) => e.target.src='https://via.placeholder.com/50'} />
+                                <img src={getProductImage(product.image)} alt={product.name} style={{ width: '50px', height: '50px', objectFit: 'contain' }} onError={(e) => e.target.src='https://via.placeholder.com/50'} />
                             </td>
                             <td style={{ maxWidth: '300px', fontWeight: '500' }}>{product.name}</td>
                             <td style={{ color: '#e53e3e', fontWeight: 'bold' }}>{product.price.toLocaleString('vi-VN')}đ</td>

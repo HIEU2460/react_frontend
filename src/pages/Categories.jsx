@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
+import { getCollection } from '../services/api';
+import { getProductImage } from '../utils/productImages';
 
 export default function Categories() {
     const [products, setProducts] = useState([]);
@@ -12,15 +13,14 @@ export default function Categories() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const catRes = await axios.get('http://localhost:3001/categories');
-                setCategories(catRes.data);
+                const categoriesData = await getCollection('categories');
+                setCategories(categoriesData);
 
-                let url = 'http://localhost:3001/products';
-                if (categoryId) url += `?categoryId=${categoryId}`;
-                if (keyword) url += `?name_like=${keyword}`; 
-
-                const prodRes = await axios.get(url);
-                setProducts(prodRes.data);
+                const productsData = await getCollection('products', {
+                    ...(categoryId ? { categoryId } : {}),
+                    ...(keyword ? { name_like: keyword } : {}),
+                });
+                setProducts(productsData);
             } catch (err) {
                 console.error(err);
             }
@@ -47,7 +47,7 @@ export default function Categories() {
                     {products.length > 0 ? products.map(product => (
                         <article className="product-card" key={product.id}>
                             <figure>
-                                <img src={`/assets/images/${product.image}`} alt={product.name} onError={(e) => e.target.src='https://via.placeholder.com/200'} />
+                                <img src={getProductImage(product.image)} alt={product.name} onError={(e) => e.target.src='https://via.placeholder.com/200'} />
                             </figure>
                             <h3>{product.name}</h3>
                             <strong>{product.price.toLocaleString('vi-VN')}đ</strong>

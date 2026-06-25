@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getItem } from '../services/api';
+import { getProductImage } from '../utils/productImages';
 
 export default function ProductDetail() {
     const { id } = useParams();
@@ -10,8 +11,8 @@ export default function ProductDetail() {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await axios.get(`http://localhost:3001/products/${id}`);
-                setProduct(res.data);
+                const productData = await getItem('products', id);
+                setProduct(productData);
             } catch (err) {
                 console.error(err);
             }
@@ -39,7 +40,7 @@ export default function ProductDetail() {
         <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', minHeight: '60vh' }}>
             <div style={{ display: 'flex', gap: '50px', backgroundColor: '#fff', padding: '30px', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                 <div style={{ flex: 1, textAlign: 'center' }}>
-                    <img src={`/assets/images/${product.image}`} alt={product.name} style={{ width: '100%', maxWidth: '400px', objectFit: 'contain' }} onError={(e) => e.target.src='https://via.placeholder.com/400'} />
+                    <img src={getProductImage(product.image)} alt={product.name} style={{ width: '100%', maxWidth: '400px', objectFit: 'contain' }} onError={(e) => e.target.src='https://via.placeholder.com/400'} />
                 </div>
                 <div style={{ flex: 1 }}>
                     <h2 style={{ fontSize: '28px', marginBottom: '15px' }}>{product.name}</h2>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { getCollection } from '../services/api';
+import { getProductImage } from '../utils/productImages';
 
 export default function Home() {
     const [categories, setCategories] = useState([]);
@@ -10,11 +11,11 @@ export default function Home() {
         // Lấy dữ liệu từ json-server
         const fetchData = async () => {
             try {
-                const catRes = await axios.get('http://localhost:3001/categories');
-                setCategories(catRes.data);
+                const categoriesData = await getCollection('categories');
+                setCategories(categoriesData);
 
-                const prodRes = await axios.get('http://localhost:3001/products');
-                setProducts(prodRes.data);
+                const productsData = await getCollection('products');
+                setProducts(productsData);
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -85,7 +86,7 @@ export default function Home() {
                     {products.length > 0 ? products.map(product => (
                         <article className="product-card" key={product.id}>
                             <figure>
-                                <img src={`/assets/images/${product.image}`} alt={product.name} onError={(e) => { e.target.src = 'https://via.placeholder.com/200'; }} />
+                                <img src={getProductImage(product.image)} alt={product.name} onError={(e) => { e.target.src = 'https://via.placeholder.com/200'; }} />
                             </figure>
                             <h3>{product.name}</h3>
                             <strong>{product.price.toLocaleString('vi-VN')}đ</strong>
