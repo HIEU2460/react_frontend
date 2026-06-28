@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { getCollection } from '../services/api';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -15,13 +15,10 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const users = await getCollection('users');
-            const user = users.find(item =>
-                (item.email === email || item.username === email) &&
-                item.password === password
-            );
-
-            if (user) {
+            // json-server lọc theo field (ở db.json chúng ta đặt field là username)
+            const res = await axios.get(`http://localhost:3001/users?username=${email}&password=${password}`);
+            if (res.data.length > 0) {
+                const user = res.data[0];
                 // Lưu vào LocalStorage
                 localStorage.setItem('account', JSON.stringify(user));
                 // Reload lại toàn bộ trang để Header nhận data
@@ -30,44 +27,39 @@ export default function Login() {
                 setError('Tài khoản hoặc mật khẩu không chính xác!');
             }
         } catch (err) {
-            setError('Lỗi đăng nhập, vui lòng thử lại!');
+            setError('Lỗi kết nối đến server!');
         }
     };
 
     return (
-        <main className="auth-page">
-            <Link to="/" className="auth-back-link">
-                <i className="fa-solid fa-arrow-left"></i>
-                Trang chủ
-            </Link>
+        <div style={{ backgroundColor: '#f4f6f8', minHeight: '100vh', padding: '50px 0' }}>
+            <div className="home-navigation" style={{ marginBottom: '20px', marginLeft: '50px' }}>
+                <Link to="/" className="home-link">Home</Link>
+            </div>
 
-            <section className="auth-card auth-card-compact">
-                <div className="auth-card-header">
-                    <div className="auth-logo">P</div>
-                    <h1>Chào mừng trở lại</h1>
-                    <p>Đăng nhập để tiếp tục mua sắm và theo dõi đơn hàng.</p>
-                </div>
+            <div className="card-container" style={{ margin: '0 auto' }}>
+                <h2 className="card-title">Chào mừng trở lại!</h2>
 
-                <form className="auth-form" onSubmit={handleLogin}>
-                    <div className="auth-field">
-                        <label htmlFor="email">Email</label>
-                        <div className="auth-input">
-                            <i className="fa-regular fa-envelope auth-input-icon"></i>
+                <form onSubmit={handleLogin}>
+                    <div className="form-group">
+                        <label htmlFor="email">Tài khoản (Email / Username)</label>
+                        <div className="input-group">
+                            <i className="fa-regular fa-envelope left-icon"></i>
                             <input 
                                 type="text" 
                                 id="email" 
                                 value={email} 
                                 onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="Nhập email của bạn" 
+                                placeholder="Nhập: admin hoặc khachhang1" 
                                 required 
                             />
                         </div>
                     </div>
 
-                    <div className="auth-field">
+                    <div className="form-group">
                         <label htmlFor="password">Mật khẩu</label>
-                        <div className="auth-input">
-                            <i className="fa-solid fa-lock auth-input-icon"></i>
+                        <div className="input-group">
+                            <i className="fa-solid fa-lock left-icon"></i>
                             <input 
                                 type={showPassword ? "text" : "password"} 
                                 id="password" 
@@ -75,15 +67,13 @@ export default function Login() {
                                 onChange={(e) => setPassword(e.target.value)} 
                                 placeholder="Nhập: 123" 
                                 required 
+                                className="pass-input" 
                             />
-                            <button
-                                type="button"
-                                className="auth-toggle-password"
+                            <i 
+                                className={`fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'} toggle-password`} 
                                 onClick={() => setShowPassword(!showPassword)}
-                                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                            >
-                                <i className={`fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                            </button>
+                                style={{ cursor: 'pointer' }}
+                            ></i>
                         </div>
                     </div>
 
@@ -91,20 +81,20 @@ export default function Login() {
                         <Link to="/forgot-password" className="forgot-link">Quên mật khẩu?</Link>
                     </div>
 
-                    <button type="submit" className="auth-submit">Đăng nhập</button>
+                    <button type="submit" className="btn-submit">Đăng nhập</button>
                 </form>
 
                 {error && (
-                    <div className="auth-message error">
+                    <div style={{ color: 'red', textAlign: 'center', marginTop: '15px' }}>
                         {error}
                     </div>
                 )}
 
-                <div className="auth-footer">
+                <div className="footer-text" style={{ marginTop: '20px' }}>
                     Bạn chưa có tài khoản?
                     <Link to="/register"> Đăng ký</Link>
                 </div>
-            </section>
-        </main>
+            </div>
+        </div>
     );
 }

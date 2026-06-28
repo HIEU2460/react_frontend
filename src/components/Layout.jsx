@@ -12,8 +12,6 @@ export default function Layout() {
             document.body.className = 'home-page';
         } else if (path.includes('categories')) {
             document.body.className = 'categories-page';
-        } else if (path.includes('brands')) {
-            document.body.className = 'brands-page';
         } else if (path.includes('product-detail')) {
             document.body.className = 'product-detail-body';
         } else if (path.includes('cart')) {

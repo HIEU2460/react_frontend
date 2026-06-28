@@ -2,44 +2,17 @@ import axios from 'axios';
 import database from '../data/db.json';
 
 const API_URL = 'http://localhost:3001';
-const LOCAL_CREATED_KEY = 'localCreatedRecords';
 
 const getLocalCollection = (collection) => database[collection] || [];
 
 const normalizeId = (id) => Number(id);
-
-const getLocalCreatedRecords = (collection) => {
-    if (typeof localStorage === 'undefined') return [];
-
-    try {
-        const records = JSON.parse(localStorage.getItem(LOCAL_CREATED_KEY)) || {};
-        return records[collection] || [];
-    } catch (error) {
-        return [];
-    }
-};
-
-const saveLocalCreatedRecord = (collection, payload) => {
-    if (typeof localStorage === 'undefined') return payload;
-
-    const records = JSON.parse(localStorage.getItem(LOCAL_CREATED_KEY)) || {};
-    const currentCollection = records[collection] || [];
-    const nextRecord = {
-        id: payload.id || Date.now(),
-        ...payload,
-    };
-
-    records[collection] = [...currentCollection, nextRecord];
-    localStorage.setItem(LOCAL_CREATED_KEY, JSON.stringify(records));
-    return nextRecord;
-};
 
 export async function getCollection(collection, params = {}) {
     try {
         const res = await axios.get(`${API_URL}/${collection}`, { params });
         return res.data;
     } catch (error) {
-        let data = [...getLocalCollection(collection), ...getLocalCreatedRecords(collection)];
+        let data = getLocalCollection(collection);
 
         if (params.categoryId) {
             data = data.filter(item => item.categoryId === normalizeId(params.categoryId));
@@ -51,10 +24,6 @@ export async function getCollection(collection, params = {}) {
 
         if (params.username) {
             data = data.filter(item => item.username === params.username);
-        }
-
-        if (params.email) {
-            data = data.filter(item => item.email === params.email);
         }
 
         if (params.password) {
@@ -90,12 +59,8 @@ export async function getItem(collection, id) {
 }
 
 export async function createItem(collection, payload) {
-    try {
-        const res = await axios.post(`${API_URL}/${collection}`, payload);
-        return res.data;
-    } catch (error) {
-        return saveLocalCreatedRecord(collection, payload);
-    }
+    const res = await axios.post(`${API_URL}/${collection}`, payload);
+    return res.data;
 }
 
 export async function deleteItem(collection, id) {
